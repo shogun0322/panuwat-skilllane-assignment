@@ -1,0 +1,30 @@
+{
+  "name": "panuwat-skilllane-assignment",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "packages/frontend",
+    "packages/backend"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm --workspace=frontend run start\" \"npm --workspace=backend run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shogun0322/panuwat-skilllane-assignment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/shogun0322/panuwat-skilllane-assignment/issues"
+  },
+  "homepage": "https://github.com/shogun0322/panuwat-skilllane-assignment#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
