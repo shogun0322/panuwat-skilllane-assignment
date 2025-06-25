@@ -1,9 +1,10 @@
 import fp from "fastify-plugin";
+import fastifyJwt from "@fastify/jwt";
 import { FastifyInstance } from "fastify";
 
 export default fp(async function (fastify: FastifyInstance) {
-  fastify.register(require("@fastify/jwt"), {
-    secret: process.env.JWT_SECRET || "your-secret",
+  fastify.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET || "panuwat",
   });
 
   fastify.decorate("authenticate", async function (request: any, reply: any) {

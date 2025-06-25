@@ -11,7 +11,6 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { useLocation, useNavigate } from "react-router";
 import { CloudUpload } from "@mui/icons-material";
 
-import "react-quill/dist/quill.snow.css";
 import { useForm } from "react-hook-form";
 import RichTextEditor from "components/RichTextEditor";
 

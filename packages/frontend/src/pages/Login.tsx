@@ -27,9 +27,7 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormInputs>();
 
-  const handleLogin = (data: LoginFormInputs) => {
-    console.log("shogun test Login data", data);
-  };
+  const handleLogin = (data: LoginFormInputs) => {};
 
   return (
     <Grid container minHeight={"100dvh"}>
@@ -42,7 +40,12 @@ export default function Login() {
           justifyContent: "center",
         }}
       >
-        <img src="/images/login/logo.webp" height={40} width={116} />
+        <img
+          height={40}
+          width={116}
+          alt="panuwat"
+          src="/images/login/logo.webp"
+        />
         <Typography
           mt={3}
           mb={4}
