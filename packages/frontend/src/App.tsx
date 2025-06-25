@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-function App() {
+import ErrorBoundary from "ErrorBoundary";
+import PrivateRoutes from "routes/PrivateRoutes";
+import PublishRoutes from "routes/PublishRoutes";
+import { ThemeProvider } from "@emotion/react";
+import theme from "theme";
+import { isAuthenticated } from "utils/auth";
+
+export default function App() {
+  console.log('shogun test ', isAuthenticated());
+  
+  const routes = isAuthenticated() ? PrivateRoutes : PublishRoutes;
+
+  const router = createBrowserRouter([routes]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <RouterProvider
+          router={router}
+          errorElement={<div>error</div>}
+          fallbackElement={<div />}
+        />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
-
-export default App;

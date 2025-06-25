@@ -1,21 +1,17 @@
 import Fastify from "fastify";
+import authPlugin from "./plugins/auth";
+// import dbPlugin from "./plugins/db";
+import authRoutes from "./routes/auth";
+import taskRoutes from "./routes/task";
 
-const fastify = Fastify({
-  logger: true,
+const fastify = Fastify({ logger: true });
+
+// fastify.register(dbPlugin);
+fastify.register(authPlugin);
+fastify.register(authRoutes, { prefix: "/auth" });
+fastify.register(taskRoutes, { prefix: "/tasks" });
+
+fastify.listen({ port: 3001 }, (err, address) => {
+  if (err) throw err;
+  console.log(`Server listening at ${address}`);
 });
-
-fastify.get("/", async (request, reply) => {
-  return { hello: "world" };
-});
-
-const start = async () => {
-  try {
-    await fastify.listen({ port: 3001 });
-    console.log("Server running at http://localhost:3001");
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-};
-
-start();

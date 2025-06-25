@@ -10,7 +10,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm --workspace=frontend run start\" \"npm --workspace=backend run dev\""
+    "start:frontend": "npm --workspace=frontend run start",
+    "start:backend": "npm --workspace=backend run dev",
+    "dev": "concurrently -n FRONTEND,BACKEND -c cyan,magenta \"npm --workspace=frontend run start\" \"npm --workspace=backend run dev\"",
+    "install:frontend": "npm install --workspace=frontend",
+    "install:backend": "npm install --workspace=backend"
   },
   "repository": {
     "type": "git",
@@ -26,5 +30,9 @@
   "homepage": "https://github.com/shogun0322/panuwat-skilllane-assignment#readme",
   "devDependencies": {
     "concurrently": "^9.2.0"
+  },
+  "dependencies": {
+    "@tiptap/react": "^2.22.3",
+    "react-quill": "^2.0.0"
   }
 }
