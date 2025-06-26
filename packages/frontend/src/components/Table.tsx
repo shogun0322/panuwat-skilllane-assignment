@@ -2,7 +2,7 @@ import React from "react";
 import {
   Box,
   Table,
-  Paper,
+  styled,
   TableRow,
   TableCell,
   TableBody,
@@ -12,6 +12,7 @@ import {
   TablePagination,
 } from "@mui/material";
 
+// ====== Interfaces ======
 export interface TableColumn<T> {
   key: keyof T | string;
   label: string;
@@ -32,6 +33,7 @@ export interface MuiTableProps<T> {
   handleChangeRowsPerPage: (newRowsPerPage: number) => void;
 }
 
+// ====== Main Component ======
 export function CustomTable<T>({
   columns,
   rows,
@@ -42,20 +44,12 @@ export function CustomTable<T>({
   totalRows,
   handleChangePage,
   handleChangeRowsPerPage,
+  emptyText,
 }: MuiTableProps<T>) {
   const flexTotal = columns.reduce((sum, col) => sum + (col.flex ?? 1), 0);
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{
-        borderRadius: 2,
-        height: "100%",
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <TableContainerCustom>
       {loading ? (
         <Box
           p={4}
@@ -79,14 +73,15 @@ export function CustomTable<T>({
             {!rows || rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} align="center">
-                  <Box py={4}>
+                  <EmptyStateBox>
                     <img
-                      src="/images/table/not-found.png"
                       alt="No data"
+                      src="/images/table/not-found.svg"
                       width={352}
                       height={155}
+                      style={{ maxWidth: "100%", height: "auto" }}
                     />
-                  </Box>
+                  </EmptyStateBox>
                 </TableCell>
               </TableRow>
             ) : (
@@ -112,8 +107,7 @@ export function CustomTable<T>({
         </Table>
       )}
       {rows && rows.length !== 0 && (
-        <TablePagination
-          component="div"
+        <ResponsiveTablePagination
           count={totalRows}
           page={page - 1}
           rowsPerPage={rowsPerPage}
@@ -121,9 +115,50 @@ export function CustomTable<T>({
           onRowsPerPageChange={(event) =>
             handleChangeRowsPerPage(parseInt(event.target.value, 10))
           }
-          sx={{ height: 52, marginTop: "auto" }}
         />
       )}
-    </TableContainer>
+    </TableContainerCustom>
   );
 }
+
+// ====== Styled components ======
+const TableContainerCustom = styled(TableContainer)`
+  height: 100%;
+  display: flex;
+  border-radius: 4px;
+  position: relative;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+`;
+
+const ResponsiveTablePagination = styled(TablePagination)(({ theme }) => ({
+  height: 52,
+  marginTop: "auto",
+  background: "#fff",
+  borderTop: "1px solid #eee",
+  [theme.breakpoints.down("sm")]: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    width: "100vw",
+    zIndex: 10,
+    margin: 0,
+    borderRadius: 0,
+    boxShadow: "0 -2px 16px 0 rgba(0,0,0,0.04)",
+  },
+}));
+
+const EmptyStateBox = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(4),
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  [theme.breakpoints.down("sm")]: {
+    minHeight: "40vh",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: theme.spacing(1),
+  },
+}));

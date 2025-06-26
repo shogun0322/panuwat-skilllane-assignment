@@ -11,10 +11,11 @@ type StatusType = "" | "INCOMPLETE" | "COMPLETE";
 export interface StatusSelectProps {
   value: StatusType;
   onChange: (event: SelectChangeEvent<StatusType>) => void;
+  showAll?: boolean;
 }
 
 const statusOptions: { value: StatusType; label: string }[] = [
-  { value: "INCOMPLETE", label: "INCOMPLETE" },
+  { value: "INCOMPLETE", label: "Incomplete" },
   { value: "COMPLETE", label: "Complete" },
 ];
 
@@ -32,10 +33,11 @@ const getStatusBg = (status: StatusType) => {
 export const StatusSelect: React.FC<StatusSelectProps> = ({
   value,
   onChange,
+  showAll = true,
 }) => (
   <FormControl fullWidth>
     <Select
-      value={value}
+      value={value ?? ""}
       onChange={onChange}
       displayEmpty
       sx={{
@@ -43,9 +45,11 @@ export const StatusSelect: React.FC<StatusSelectProps> = ({
         backgroundColor: getStatusBg(value),
       }}
     >
-      <MenuItem value="" disabled>
-        Status
-      </MenuItem>
+      {!showAll && (
+        <MenuItem value="" disabled={showAll}>
+          All Status
+        </MenuItem>
+      )}
       {statusOptions.map((opt) => (
         <MenuItem
           key={opt.value}

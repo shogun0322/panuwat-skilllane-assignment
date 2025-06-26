@@ -118,7 +118,7 @@ export default async function (fastify: FastifyInstance) {
           where,
           limit,
           offset,
-          order: [["created_at", "DESC"]],
+          order: [["updated_at", "DESC"]],
           include: [
             {
               model: User,

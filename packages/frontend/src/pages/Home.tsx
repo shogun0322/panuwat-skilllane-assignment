@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
 import {
@@ -23,8 +23,7 @@ import { taskStore } from "store/task";
 import { loadStore } from "store/load";
 import { alertStore } from "store/alert";
 import { useConfirmAction } from "hook/useConfirmAction";
-
-let timer: any;
+import EditIcon from "@mui/icons-material/Edit";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -40,7 +39,10 @@ export default function Home() {
     changeLimit,
     searchWithTitle,
     changeFilterStatus,
+    clearFilter,
   } = taskStore();
+  const timerRef = useRef<number | NodeJS.Timeout | null>(null);
+
   const { setLoad } = loadStore();
   const { setAlert } = alertStore();
 
@@ -99,6 +101,18 @@ export default function Home() {
       ),
       flex: 0.5,
     },
+
+    {
+      key: "id",
+      label: "",
+      render: (row: any) => (
+        <EditIcon
+          sx={{ cursor: "pointer" }}
+          onClick={() => navigate("/task/manage", { state: row.id })}
+        />
+      ),
+      flex: 0.05,
+    },
   ];
 
   const handleUpdateStatus = async (
@@ -116,34 +130,37 @@ export default function Home() {
       getTaskList(setAlert, setLoad);
     }
   };
-  const handleChangeTitle = (value: string) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => searchWithTitle(value), 1000);
-  };
 
   useEffect(() => {
-    getTaskList(setAlert, setLoad);
-  }, [title, status, getTaskList, setAlert, setLoad, limit, page]);
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => getTaskList(setAlert, setLoad), 1000);
+
+    return () => {
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+    };
+  }, [title, status, limit, page, getTaskList, setAlert, setLoad]);
 
   return (
     <Stack direction="column" flex={1}>
       <Dialog open={confirm.open} onClose={confirm.cancel}>
-        <DialogTitle>ยืนยันการเปลี่ยนแปลง</DialogTitle>
-        <DialogContent>คุณต้องการเปลี่ยนข้อมูลใช่หรือไม่?</DialogContent>
-        <DialogActions>
-          <Button onClick={confirm.cancel}>ยกเลิก</Button>
-          <Button
-            color="primary"
-            variant="contained"
-            onClick={() =>
-              confirm.confirm((data) =>
-                handleUpdateStatus(data.id, data.status)
-              )
-            }
-          >
-            ยืนยัน
-          </Button>
-        </DialogActions>
+        <Box sx={{ maxWidth: "400px", p: 2 }}>
+          <DialogTitle>Confirm Changes</DialogTitle>
+          <DialogContent>Do you want to change the information?</DialogContent>
+          <DialogActions>
+            <Button onClick={confirm.cancel}>Cancel</Button>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() =>
+                confirm.confirm((data) =>
+                  handleUpdateStatus(data.id, data.status)
+                )
+              }
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Box>
       </Dialog>
 
       <Stack
@@ -176,23 +193,35 @@ export default function Home() {
         spacing={{ xs: 1, md: 2 }}
       >
         <TextField
-          sx={{ width: { xs: "100%", md: 400 } }}
+          value={title}
           placeholder="Search by Tasks"
-          onChange={(e) => handleChangeTitle(e.target.value)}
+          sx={{ width: { xs: "100%", md: 400 } }}
+          onChange={(e) => searchWithTitle(e.target.value)}
         />
 
-        <Box sx={{ width: { xs: "100%", md: 200 } }}>
-          <StatusSelect
-            value={status}
-            onChange={(e: any) => changeFilterStatus(e.target.value)}
-          />
-        </Box>
+        <Stack flexDirection="row">
+          <Box sx={{ width: { xs: "100%", md: 200 } }}>
+            <StatusSelect
+              showAll={false}
+              value={status}
+              onChange={(e: any) => changeFilterStatus(e.target.value)}
+            />
+          </Box>
+
+          <Button
+            size="large"
+            sx={{ width: "126px", ml: 2 }}
+            onClick={() => clearFilter()}
+          >
+            CLEAR
+          </Button>
+        </Stack>
       </Stack>
 
       <Box
         mt={3}
         flex={1}
-        sx={{ width: { xs: "90vw", md: "100%" }, overflow: "scroll" }}
+        sx={{ width: { xs: "92vw", sm: "100%" }, overflow: "scroll" }}
       >
         <CustomTable
           columns={columns}

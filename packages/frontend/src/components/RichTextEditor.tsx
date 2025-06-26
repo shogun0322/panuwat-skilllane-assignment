@@ -96,6 +96,15 @@ function MenuBar({ editor }: MenuBarProps) {
   );
 }
 
+function cleanHtml(html: string) {
+  if (!html) return "";
+  const cleaned = html
+    .replace(/<p><br><\/p>/gi, "")
+    .replace(/<p>\s*<\/p>/gi, "")
+    .trim();
+  return cleaned === "" ? "" : html;
+}
+
 export interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -123,6 +132,8 @@ function RichTextEditor({
     content: value || "",
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+      const html = editor.getHTML();
+      onChange(cleanHtml(html));
     },
     editorProps: {
       attributes: {

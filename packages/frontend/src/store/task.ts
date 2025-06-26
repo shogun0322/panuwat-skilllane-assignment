@@ -39,6 +39,8 @@ interface TaskState {
     setAlert: (message: string, type: "success" | "error") => void,
     setLoad: () => void
   ) => void;
+
+  clearFilter: () => void;
 }
 
 export const taskStore = create<TaskState>((set, get) => ({
@@ -52,6 +54,9 @@ export const taskStore = create<TaskState>((set, get) => ({
   title: null,
   status: "",
 
+  clearFilter: () => {
+    set({ title: "", status: "" });
+  },
   getTaskList: async (setAlert, setLoad) => {
     try {
       setLoad();

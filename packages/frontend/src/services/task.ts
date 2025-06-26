@@ -33,7 +33,7 @@ export async function getTaskDetail(id: string) {
 }
 
 export async function createTask(body: TaskDetailBody) {
-  const res = await axiosCustom.post("/tasks/create", { body });
+  const res = await axiosCustom.post("/tasks/create", body);
   return res.data;
 }
 

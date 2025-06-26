@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -31,6 +31,7 @@ import {
   updateTaskDetail,
 } from "services/task";
 import { uploadImage } from "services/upload";
+import { StatusSelect } from "components/SelectStatus";
 
 export const formValidation = {
   title: {
@@ -40,6 +41,7 @@ export const formValidation = {
 
   description: {
     required: "Description is required",
+    minLength: { value: 1, message: "At least 1 characters" },
   },
 };
 
@@ -54,8 +56,6 @@ export default function ManageTask() {
   const { setAlert } = alertStore();
   const { getTaskDetailData } = taskStore();
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
   const confirm = useConfirmAction<{ id: string | undefined }>();
 
   const {
@@ -65,30 +65,17 @@ export default function ManageTask() {
     setValue,
     reset,
     getValues,
-    formState: { errors },
     watch,
-  } = useForm<TaskDetailBody>({
-    defaultValues: {
-      image: null,
-    },
-  });
-
-  const imageFile = watch("image");
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
+    formState: { errors },
+  } = useForm<TaskDetailBody>();
 
   const handleSubmitData = async (data: TaskDetailBody) => {
     try {
       setLoad();
       if (isEdit) {
-        await updateTaskDetail({ ...data, image: null, status: "INCOMPLETE" });
+        await updateTaskDetail({ ...data });
       } else {
-        await createTask({ ...data, image: null, status: "INCOMPLETE" });
+        await createTask({ ...data, status: "INCOMPLETE" });
       }
       setLoad();
       setAlert(`${actionText} Task Success`, "success");
@@ -124,7 +111,6 @@ export default function ManageTask() {
       setValue("image", data.url);
 
       setAlert(`Add Image Success`, "success");
-      gotoHome();
     } catch (error) {
       setAlert(`Add Image Error`, "error");
     } finally {
@@ -134,11 +120,13 @@ export default function ManageTask() {
 
   const getDetail = async () => {
     const data = (await getTaskDetailData(state, setAlert, setLoad)) as any;
+    console.log("shogun test dd", data);
+
     reset({
       id: data.id,
       title: data.title ?? "",
       description: data.description ?? "",
-      image: null, // เสมอ (เพราะฟอร์มต้องการ File)
+      image: data.image,
       status: data.status ?? "",
     });
   };
@@ -146,25 +134,35 @@ export default function ManageTask() {
     if (isEdit) getDetail();
   }, [state]);
 
+  const image = watch("image");
+  const status = watch("status");
+  console.log("shogun test ", status);
+
   return (
     <Stack width={"100%"}>
       <Dialog open={confirm.open} onClose={confirm.cancel}>
-        <DialogTitle>ยืนยันการเปลี่ยนแปลง</DialogTitle>
-        <DialogContent>คุณต้องการลบข้อมูลใช่หรือไม่?</DialogContent>
-        <DialogActions>
-          <Button onClick={confirm.cancel}>ยกเลิก</Button>
-          <Button
-            color="primary"
-            variant="contained"
-            onClick={() => confirm.confirm((data) => handleDeleteData(data.id))}
-          >
-            ยืนยัน
-          </Button>
-        </DialogActions>
+        <Box sx={{ maxWidth: "400px", p: 2 }}>
+          <DialogTitle>Delete Task?</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this task? This action cannot be
+            undone.
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={confirm.cancel}>Cancel</Button>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() =>
+                confirm.confirm((data) => handleDeleteData(data.id))
+              }
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Box>
       </Dialog>
       <Typography
         variant="h5"
-        color="primary"
         fontWeight={700}
         onClick={() => gotoHome()}
         sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
@@ -196,6 +194,19 @@ export default function ManageTask() {
           onSubmit={handleSubmit(handleSubmitData)}
         >
           <Stack direction="column" spacing={3} flex={1}>
+            {isEdit && (
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                  Status
+                </Typography>
+
+                <StatusSelect
+                  showAll
+                  value={status as any}
+                  onChange={(e) => setValue("status", e.target.value as any)}
+                />
+              </Box>
+            )}
             <Box>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 Title <span style={{ color: "red" }}>*</span>
@@ -257,10 +268,10 @@ export default function ManageTask() {
                   <Typography variant="body2" color="text.secondary">
                     PNG or JPG (max. 3MB)
                   </Typography>
-                  {getValues("image") && (
+                  {image && (
                     <Box mt={2}>
                       <img
-                        src={getValues("image") || ""}
+                        src={image || ""}
                         alt="Preview"
                         style={{
                           maxWidth: 180,
@@ -269,12 +280,6 @@ export default function ManageTask() {
                           border: "1px solid #eee",
                         }}
                       />
-                      {/* <Typography
-                        variant="caption"
-                        sx={{ display: "block", mt: 0.5 }}
-                      >
-                        {imageFile?.name}
-                      </Typography> */}
                     </Box>
                   )}
                 </UploadArea>
@@ -283,6 +288,11 @@ export default function ManageTask() {
                 <Typography color="error" variant="caption">
                   {errors.image.message as string}
                 </Typography>
+              )}
+              {image && (
+                <Button onClick={() => setValue("image", "")}>
+                  Delete Image
+                </Button>
               )}
             </Box>
           </Stack>
@@ -294,12 +304,15 @@ export default function ManageTask() {
             alignItems="center"
             justifyContent="space-between"
           >
-            {isEdit && (
-              <Delete
-                onClick={() => confirm.request({ id: getValues("id") })}
-              />
-            )}
-            <Stack spacing={1} direction="row">
+            <Box>
+              {isEdit && (
+                <Delete
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => confirm.request({ id: getValues("id") })}
+                />
+              )}
+            </Box>
+            <Stack spacing={1} direction="row" sx={{ alignSelf: "flex-end" }}>
               <Button variant="outlined" onClick={() => gotoHome()}>
                 CANCEL
               </Button>

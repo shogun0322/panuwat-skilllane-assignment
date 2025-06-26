@@ -1,18 +1,16 @@
 import { Storage } from "@google-cloud/storage";
+import { randomUUID } from "crypto";
 import { FastifyInstance } from "fastify";
+import path from "path";
 
 export default async function (fastify: FastifyInstance) {
   type UploadResponse = { url: string };
 
-  const gcpKey = process.env.GCP_SERVICE_ACCOUNT_KEY;
-  if (!gcpKey) throw new Error("Missing GCP_SERVICE_ACCOUNT_KEY");
-
-  const credentials = JSON.parse(gcpKey);
   const storage = new Storage({
-    projectId: credentials.project_id,
-    credentials,
+    projectId: "hop-dating-file",
+    keyFilename: path.join(__dirname, "../service-account.json"),
   });
-  const bucket = storage.bucket("test");
+  const bucket = storage.bucket("test-panuwat-skilllane");
 
   fastify.post(
     "/image",
@@ -45,13 +43,13 @@ export default async function (fastify: FastifyInstance) {
         return reply.code(400).send({ error: "Only PNG or JPEG allowed" });
       }
 
-      const fileName = `${Date.now()}-${file.filename}`;
+      const fileName = randomUUID();
       const bucketFile = bucket.file(fileName);
 
       try {
         await bucketFile.save(await file.toBuffer(), {
           metadata: { contentType: file.mimetype },
-          public: true,
+          // public: true,
         });
 
         const url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;

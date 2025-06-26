@@ -17,12 +17,14 @@ export default function GlobalAlert() {
       }
       open={show}
       message={message}
-      autoHideDuration={3000}
+      autoHideDuration={2000}
       onClose={() => clearAlert()}
     >
-      <Alert severity={type || "success"} sx={{ width: 400 }} variant="filled">
-        {message}
-      </Alert>
+      {type ? (
+        <Alert severity={type} sx={{ width: 400 }} variant="filled">
+          {message}
+        </Alert>
+      ) : undefined}
     </Snackbar>
   );
 }
