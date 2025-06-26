@@ -5,6 +5,10 @@ Fullstack Assignment: Task Management System
 - **Frontend:** React + MUI + Zustand
 - **Backend:** Fastify + Sequelize + PostgreSQL + Google Cloud Storage
 
+## User for test
+- email : test@example.com
+- password : password
+
 ## โครงสร้างโปรเจกต์
 
 ```
