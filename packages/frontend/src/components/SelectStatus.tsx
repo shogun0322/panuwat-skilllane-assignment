@@ -3,11 +3,10 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   SelectChangeEvent,
 } from "@mui/material";
 
-type StatusType = "" | "incomplete" | "complete";
+type StatusType = "" | "INCOMPLETE" | "COMPLETE";
 
 export interface StatusSelectProps {
   value: StatusType;
@@ -15,15 +14,15 @@ export interface StatusSelectProps {
 }
 
 const statusOptions: { value: StatusType; label: string }[] = [
-  { value: "incomplete", label: "Incomplete" },
-  { value: "complete", label: "Complete" },
+  { value: "INCOMPLETE", label: "INCOMPLETE" },
+  { value: "COMPLETE", label: "Complete" },
 ];
 
 const getStatusBg = (status: StatusType) => {
   switch (status) {
-    case "complete":
+    case "COMPLETE":
       return "#C8E6C9"; // Green
-    case "incomplete":
+    case "INCOMPLETE":
       return "#EEEEEE"; // Grey
     default:
       return "#FAFAFA"; // Placeholder

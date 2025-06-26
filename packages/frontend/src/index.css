@@ -5,3 +5,11 @@ body {
   margin: 0;
   font-family: "Noto Sans Thai";
 }
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}

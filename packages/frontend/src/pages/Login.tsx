@@ -1,6 +1,11 @@
 import { useForm } from "react-hook-form";
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 
+import { loginApi } from "services/auth";
+
+import { loadStore } from "store/load";
+import { alertStore } from "store/alert";
+
 export const loginValidation = {
   email: {
     required: "Email is required",
@@ -27,7 +32,19 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormInputs>();
 
-  const handleLogin = (data: LoginFormInputs) => {};
+  const { setLoad } = loadStore();
+  const { setAlert } = alertStore();
+
+  const handleLogin = async (data: LoginFormInputs) => {
+    try {
+      setLoad();
+      await loginApi(data);
+      setLoad();
+    } catch (error) {
+      setLoad();
+      setAlert("Login Error", "error");
+    }
+  };
 
   return (
     <Grid container minHeight={"100dvh"}>
@@ -71,7 +88,7 @@ export default function Login() {
             <TextField
               required
               fullWidth
-              margin="normal"
+              margin="dense"
               placeholder="Enter your Email"
               error={!!errors.email}
               helperText={errors.email?.message}
@@ -79,7 +96,7 @@ export default function Login() {
             />
           </Box>
 
-          <Box>
+          <Box mt={2}>
             <Typography variant="body2">
               Password <span style={{ color: "red" }}>*</span>
             </Typography>
@@ -87,7 +104,7 @@ export default function Login() {
               required
               fullWidth
               type="password"
-              margin="normal"
+              margin="dense"
               label="Enter your Password"
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -97,10 +114,10 @@ export default function Login() {
 
           <Button
             fullWidth
-            sx={{ mt: 2 }}
-            type="submit"
-            variant="contained"
             size="large"
+            type="submit"
+            sx={{ mt: 2 }}
+            variant="contained"
             disabled={isSubmitting}
           >
             LOGIN

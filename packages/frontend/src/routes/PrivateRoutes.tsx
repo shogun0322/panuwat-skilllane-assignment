@@ -21,7 +21,7 @@ const RenderPrivateRoute = () => {
           flex: 1,
           px: { xs: 2, md: 14 },
           pt: { xs: 4, md: 6 },
-          pb: { xs: 8, md: 12 },
+          pb: { xs: 8, md: 7 },
           backgroundColor: "#F8FAFC",
         }}
       >

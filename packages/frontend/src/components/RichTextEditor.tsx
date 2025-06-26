@@ -30,6 +30,7 @@ function MenuBar({ editor }: MenuBarProps) {
         mb: 1,
         gap: 1,
         display: "flex",
+        flexWrap: "wrap",
         borderBottom: "1px solid #eee",
       }}
     >
@@ -103,7 +104,13 @@ export interface RichTextEditorProps {
   placeholder?: string;
 }
 
-function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  error,
+  helperText,
+}: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -129,32 +136,39 @@ function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
   }, [value, editor]);
 
   return (
-    <Box
-      sx={{
-        border: 1,
-        borderColor: "rgba(0, 0, 0, 0.23)",
-        borderRadius: 1,
-        "&:hover": {
-          borderColor: "primary.main",
-        },
-
-        "& .ProseMirror": {
-          outline: "none",
-          minHeight: "80px",
-          "& p.is-editor-empty:first-of-type::before": {
-            content: `"${placeholder || ""}"`,
-            float: "left",
-            pointerEvents: "none",
-            height: 0,
+    <>
+      <Box
+        sx={{
+          border: 1,
+          borderColor: error ? "red" : "rgba(0, 0, 0, 0.23)",
+          borderRadius: 1,
+          "&:hover": {
+            borderColor: error ? "red" : "primary.main",
           },
-        },
-      }}
-    >
-      <MenuBar editor={editor} />
-      <Box p={2}>
-        <EditorContent editor={editor} />
+
+          "& .ProseMirror": {
+            outline: "none",
+            minHeight: "80px",
+            "& p.is-editor-empty:first-of-type::before": {
+              content: `"${placeholder || ""}"`,
+              float: "left",
+              pointerEvents: "none",
+              height: 0,
+            },
+          },
+        }}
+      >
+        <MenuBar editor={editor} />
+        <Box p={2}>
+          <EditorContent editor={editor} />
+        </Box>
       </Box>
-    </Box>
+      {error && (
+        <Typography color="error" variant="caption" px={"14px"}>
+          {helperText}
+        </Typography>
+      )}
+    </>
   );
 }
 

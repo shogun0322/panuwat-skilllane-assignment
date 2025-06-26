@@ -41,5 +41,5 @@ packages/*/tsconfig.tsbuildinfo
 *.local
 
 
-package.lock.json
+package-lock.json
 yarn.lock

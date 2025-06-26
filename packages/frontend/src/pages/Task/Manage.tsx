@@ -1,30 +1,41 @@
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router";
 import {
   Box,
   Button,
   Paper,
   Stack,
   styled,
+  Dialog,
   TextField,
   Typography,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
 } from "@mui/material";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import { useLocation, useNavigate } from "react-router";
-import { CloudUpload } from "@mui/icons-material";
 
-import { useForm } from "react-hook-form";
+import { CloudUpload, Delete, ArrowBackIos } from "@mui/icons-material";
+
 import RichTextEditor from "components/RichTextEditor";
 
-export interface TaskManagementFormInputs {
-  title: string;
-  description: string;
-  image: string;
-  status: string;
-}
+import { taskStore } from "store/task";
+import { loadStore } from "store/load";
+import { alertStore } from "store/alert";
+import { useConfirmAction } from "hook/useConfirmAction";
+
+import {
+  createTask,
+  deleteTask,
+  TaskDetailBody,
+  updateTaskDetail,
+} from "services/task";
+import { uploadImage } from "services/upload";
 
 export const formValidation = {
   title: {
     required: "Title is required",
-    minLength: { value: 6, message: "At least 6 characters" },
+    minLength: { value: 3, message: "At least 3 characters" },
   },
 
   description: {
@@ -36,51 +47,133 @@ export default function ManageTask() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  console.log("shogun test ", state);
+  const isEdit = state;
+  const actionText = isEdit ? "Update" : "Create";
+
+  const { setLoad } = loadStore();
+  const { setAlert } = alertStore();
+  const { getTaskDetailData } = taskStore();
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const confirm = useConfirmAction<{ id: string | undefined }>();
 
   const {
     register,
+    control,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<TaskManagementFormInputs>();
+    setValue,
+    reset,
+    getValues,
+    formState: { errors },
+    watch,
+  } = useForm<TaskDetailBody>({
+    defaultValues: {
+      image: null,
+    },
+  });
+
+  const imageFile = watch("image");
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      //   setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmitData = (data: TaskManagementFormInputs) => {
-    console.log("shogun test Login data", data);
+  const handleSubmitData = async (data: TaskDetailBody) => {
+    try {
+      setLoad();
+      if (isEdit) {
+        await updateTaskDetail({ ...data, image: null, status: "INCOMPLETE" });
+      } else {
+        await createTask({ ...data, image: null, status: "INCOMPLETE" });
+      }
+      setLoad();
+      setAlert(`${actionText} Task Success`, "success");
+      gotoHome();
+    } catch (error) {
+      setLoad();
+      setAlert(`${actionText} Task Error`, "error");
+    }
   };
 
-  const gotoHome = () => {
-    navigate(-1);
+  const handleDeleteData = async (id: string | undefined) => {
+    try {
+      if (!id) throw new Error("");
+      setLoad();
+      await deleteTask(id);
+      setAlert(`Delete Task Success`, "success");
+      gotoHome();
+    } catch (error) {
+      setAlert(`Delete Task Error`, "error");
+    } finally {
+      setLoad();
+    }
   };
+
+  const gotoHome = () => navigate(-1);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+
+    try {
+      setLoad();
+      const data = await uploadImage(e.target.files[0]);
+      setValue("image", data.url);
+
+      setAlert(`Add Image Success`, "success");
+      gotoHome();
+    } catch (error) {
+      setAlert(`Add Image Error`, "error");
+    } finally {
+      setLoad();
+    }
+  };
+
+  const getDetail = async () => {
+    const data = (await getTaskDetailData(state, setAlert, setLoad)) as any;
+    reset({
+      id: data.id,
+      title: data.title ?? "",
+      description: data.description ?? "",
+      image: null, // เสมอ (เพราะฟอร์มต้องการ File)
+      status: data.status ?? "",
+    });
+  };
+  useEffect(() => {
+    if (isEdit) getDetail();
+  }, [state]);
 
   return (
     <Stack width={"100%"}>
+      <Dialog open={confirm.open} onClose={confirm.cancel}>
+        <DialogTitle>ยืนยันการเปลี่ยนแปลง</DialogTitle>
+        <DialogContent>คุณต้องการลบข้อมูลใช่หรือไม่?</DialogContent>
+        <DialogActions>
+          <Button onClick={confirm.cancel}>ยกเลิก</Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={() => confirm.confirm((data) => handleDeleteData(data.id))}
+          >
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Typography
         variant="h5"
         color="primary"
         fontWeight={700}
-        sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
         onClick={() => gotoHome()}
+        sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
       >
-        <ArrowBackIosIcon sx={{ width: "17px", height: "17px", mr: 1 }} />
-        Create Task Detail
+        <ArrowBackIos sx={{ width: "17px", height: "17px", mr: 1 }} />
+        {`${actionText} Task Detail`}
       </Typography>
 
-      <Stack
-        sx={{
-          mt: 4,
-          flex: 1,
-          mx: "auto",
-          width: "100%",
-          maxWidth: "640px",
-        }}
-      >
+      <Container>
         <Typography variant="body1" fontWeight={700}>
           Task Information
         </Typography>
@@ -94,10 +187,10 @@ export default function ManageTask() {
           sx={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
             mt: { xs: 3 },
             p: { xs: 2, md: 3 },
             position: "relative",
+            flexDirection: "column",
           }}
           component="form"
           onSubmit={handleSubmit(handleSubmitData)}
@@ -124,12 +217,18 @@ export default function ManageTask() {
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 Description <span style={{ color: "red" }}>*</span>
               </Typography>
-
-              <RichTextEditor
-                value=""
-                onChange={() => {}}
-                error={!!errors.title}
-                helperText={errors.title?.message}
+              <Controller
+                name="description"
+                control={control}
+                rules={{ required: "Description is required" }}
+                render={({ field, fieldState }) => (
+                  <RichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
               />
             </Box>
 
@@ -139,10 +238,10 @@ export default function ManageTask() {
               </Typography>
               <input
                 type="file"
-                accept="image/png,image/jpeg"
                 id="image-upload"
+                onChange={handleUpload}
                 style={{ display: "none" }}
-                onChange={handleFileUpload}
+                accept="image/png,image/jpeg"
               />
               <label htmlFor="image-upload">
                 <UploadArea>
@@ -158,36 +257,65 @@ export default function ManageTask() {
                   <Typography variant="body2" color="text.secondary">
                     PNG or JPG (max. 3MB)
                   </Typography>
-                  {/* {selectedFile && (
-                    <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
-                      Selected: {selectedFile.name}
-                    </Typography>
-                  )} */}
+                  {getValues("image") && (
+                    <Box mt={2}>
+                      <img
+                        src={getValues("image") || ""}
+                        alt="Preview"
+                        style={{
+                          maxWidth: 180,
+                          maxHeight: 120,
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                        }}
+                      />
+                      {/* <Typography
+                        variant="caption"
+                        sx={{ display: "block", mt: 0.5 }}
+                      >
+                        {imageFile?.name}
+                      </Typography> */}
+                    </Box>
+                  )}
                 </UploadArea>
               </label>
+              {errors.image && (
+                <Typography color="error" variant="caption">
+                  {errors.image.message as string}
+                </Typography>
+              )}
             </Box>
           </Stack>
           <Stack
+            pt={2}
             mt="auto"
             spacing={1}
             direction="row"
-            justifyContent="flex-end"
+            alignItems="center"
+            justifyContent="space-between"
           >
-            <Button variant="outlined" onClick={() => gotoHome()}>
-              CANCEL
-            </Button>
-            <Button variant="contained" type="submit">
-              SAVE
-            </Button>
+            {isEdit && (
+              <Delete
+                onClick={() => confirm.request({ id: getValues("id") })}
+              />
+            )}
+            <Stack spacing={1} direction="row">
+              <Button variant="outlined" onClick={() => gotoHome()}>
+                CANCEL
+              </Button>
+              <Button variant="contained" type="submit">
+                SAVE
+              </Button>
+            </Stack>
           </Stack>
         </Paper>
-      </Stack>
+      </Container>
     </Stack>
   );
 }
 
 const UploadArea = styled(Paper)(({ theme }) => ({
-  border: `2px dashed ${theme.palette.divider}`,
+  border: `1px dashed ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
   padding: theme.spacing(6),
   textAlign: "center",
@@ -197,3 +325,11 @@ const UploadArea = styled(Paper)(({ theme }) => ({
     borderColor: theme.palette.primary.main,
   },
 }));
+
+const Container = styled(Stack)`
+  flex: 1;
+  width: 100%;
+  margin-top: 32px;
+  max-width: 640px;
+  margin-inline: auto;
+`;

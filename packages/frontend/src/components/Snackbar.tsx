@@ -1,12 +1,12 @@
 import { Alert, Snackbar, useMediaQuery, useTheme } from "@mui/material";
 
-export default function CustomStackbar() {
+import { alertStore } from "store/alert";
+
+export default function GlobalAlert() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const isOpen = false;
-  const message = "I love snacks";
-  const type = "success"; // 'error'
+  const { show, message, type, clearAlert } = alertStore();
 
   return (
     <Snackbar
@@ -15,11 +15,12 @@ export default function CustomStackbar() {
           ? { vertical: "bottom", horizontal: "center" }
           : { vertical: "top", horizontal: "center" }
       }
-      open={isOpen}
+      open={show}
       message={message}
       autoHideDuration={3000}
+      onClose={() => clearAlert()}
     >
-      <Alert severity={type} sx={{ width: 400 }} variant="filled">
+      <Alert severity={type || "success"} sx={{ width: 400 }} variant="filled">
         {message}
       </Alert>
     </Snackbar>
