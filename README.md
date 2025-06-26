@@ -68,8 +68,8 @@ npm run dev
 - Swagger Docs: `/docs`
 
 ### Backend Jest Test
--cd packages/backend
--npm run test
+- cd packages/backend
+- npm run test
 
 ### Frontend (React)
 
