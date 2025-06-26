@@ -109,8 +109,6 @@ export default function ManageTask() {
       setLoad();
       const data = await uploadImage(e.target.files[0]);
       setValue("image", data.url);
-
-      setAlert(`Add Image Success`, "success");
     } catch (error) {
       setAlert(`Add Image Error`, "error");
     } finally {
@@ -120,7 +118,6 @@ export default function ManageTask() {
 
   const getDetail = async () => {
     const data = (await getTaskDetailData(state, setAlert, setLoad)) as any;
-    console.log("shogun test dd", data);
 
     reset({
       id: data.id,
@@ -136,7 +133,6 @@ export default function ManageTask() {
 
   const image = watch("image");
   const status = watch("status");
-  console.log("shogun test ", status);
 
   return (
     <Stack width={"100%"}>
