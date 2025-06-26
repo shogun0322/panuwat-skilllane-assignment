@@ -67,6 +67,10 @@ npm run dev
 - Upload: อัปโหลดรูปภาพไป Google Cloud Storage
 - Swagger Docs: `/docs`
 
+### Backend Jest Test
+-cd packages/backend
+-npm run test
+
 ### Frontend (React)
 
 - Login/Logout

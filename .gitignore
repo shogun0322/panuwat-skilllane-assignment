@@ -43,3 +43,5 @@ packages/*/tsconfig.tsbuildinfo
 
 package-lock.json
 yarn.lock
+
+coverage/

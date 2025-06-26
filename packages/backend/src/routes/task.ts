@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Task, User } from "../models";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
 export default async function (fastify: FastifyInstance) {
   // CREATE

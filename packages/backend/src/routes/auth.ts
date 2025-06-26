@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import { User } from "../models";
-import { hashPassword, verifyPassword } from "../utils/password";
+import { verifyPassword } from "../utils/password";
 
 interface LoginBody {
   email: string;
@@ -20,10 +20,7 @@ export default async function (fastify: FastifyInstance) {
           type: "object",
           required: ["email", "password"],
           properties: {
-            email: {
-              type: "string",
-              format: "email",
-            },
+            email: { type: "string", format: "email" },
             password: { type: "string" },
           },
         },
@@ -34,7 +31,7 @@ export default async function (fastify: FastifyInstance) {
               accessToken: { type: "string" },
             },
           },
-          401: {
+          500: {
             type: "object",
             properties: {
               message: { type: "string" },
@@ -48,20 +45,26 @@ export default async function (fastify: FastifyInstance) {
         const { email, password } = req.body;
 
         const userData = await User.findOne({ where: { email } });
-
-        if (!userData) throw new Error("Invalid credentials");
+        if (!userData) {
+          await new Promise((res) => setTimeout(res, 300));
+          return reply.code(500).send({ message: "Invalid credentials" });
+        }
         const { id, email: userEmail, password: userPassword } = userData.get();
 
         const isMatch = await verifyPassword(password, userPassword);
-        if (!isMatch) throw new Error("Invalid credentials");
+        if (!isMatch) {
+          await new Promise((res) => setTimeout(res, 300));
+          return reply.code(500).send({ message: "Invalid credentials" });
+        }
 
         const token = fastify.jwt.sign({
-          id: id,
+          id,
           email: userEmail,
         });
         return reply.send({ accessToken: token });
-      } catch (error: any) {
-        return reply.code(401).send({ message: error.message });
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ message: "Invalid credentials" });
       }
     }
   );
