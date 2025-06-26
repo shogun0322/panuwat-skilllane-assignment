@@ -80,12 +80,6 @@ npm run dev
 
 - Swagger UI: [http://localhost:50000/docs](http://localhost:50000/docs)
 
-## หมายเหตุ
-
-- ต้องมี Google Cloud Storage Service Account และ Bucket
-- ต้องมี PostgreSQL Database
-- สำหรับ production ควรตั้งค่า ENV ให้ปลอดภัย
-
 ---
 
 **ผู้พัฒนา:** Panuwat Suwanritdej
