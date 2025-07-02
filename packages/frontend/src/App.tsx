@@ -11,6 +11,8 @@ import GlobalLoad from "components/Load";
 import GlobalAlert from "components/Snackbar";
 
 export default function App() {
+  console.log('shogun test load');
+  
   const routes = isAuthenticated() ? PrivateRoutes : PublishRoutes;
   const router = createBrowserRouter([routes]);
 
